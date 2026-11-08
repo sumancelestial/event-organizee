@@ -1,0 +1,91 @@
+.loading {
+    display: flex;
+    width: 100%;
+    justify-content: center;
+    align-items: center;
+    height: 60vh;
+    color: dimgray;
+}
+
+.allEventsHere {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+}
+
+.eventTile {
+    flex-basis: 20.3333%;
+    text-align: center;
+    border: 1px solid;
+    margin: 20px 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 30px 40px;
+}
+
+.eventTileExtra {
+    flex-basis: 28.6333%;
+}
+
+.eventTile:hover {
+    cursor: pointer;
+    box-shadow: 4px 4px 4px rgb(68 67 67 / 15%);
+}
+
+.eventTile p{
+    margin: 6px;
+    margin-top: 10px;
+    margin-bottom: 2px;
+}
+
+.endDateEventTile {
+    margin: 0;
+}
+
+
+.calTile {
+    display: flex;
+    justify-content: center;
+    align-items: baseline;
+}
+
+.calTile img {
+    width: 20px;
+    margin-right: 10px;
+}
+
+.calTile h3 {
+    margin: 0px;
+    margin-bottom: 10px;
+}
+
+.noneShown {
+    display: flex;
+    flex-wrap: wrap;
+    flex-basis: 100%;
+    height: 60vh;
+    justify-content: center;
+    align-items: center;
+    color: #707070;
+}
+
+@media(max-width: 930px) and (min-width:700px) {
+
+    .eventTile {
+        flex-basis: 30.3333%;
+    }
+
+}
+
+@media(max-width:700px) {
+
+    .allEventsHere {
+        width: 80%;
+    }
+
+    .eventTile {
+        flex-basis: 100%;
+    }
+
+}

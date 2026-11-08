@@ -1,0 +1,59 @@
+.loading {
+    display: flex;
+    width: 100%;
+    justify-content: center;
+    align-items: center;
+    height: 60vh;
+    color: dimgray;
+}
+
+.formContainer {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.forForm {
+    display: flex;
+    flex-direction: column;
+    width: 41%;
+}
+
+.forForm h2 {
+    text-align: center;
+}
+
+.forForm div {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    margin: 15px 0;
+}
+
+.forForm div>input {
+    width: 70%;
+    height: 30px;
+}
+
+.forForm div>button {
+    padding: 8px 20px;
+    margin-top: 0px;
+    margin-bottom: 50px;
+}
+
+@media(max-width: 930px) and (min-width:700px) {
+
+    .forForm {
+        width: 75%;
+    }
+
+}
+
+@media(max-width:700px) {
+
+    .forForm {
+        width: 100%;
+        margin-top: 30px;
+    }
+
+}

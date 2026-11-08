@@ -1,0 +1,55 @@
+.loading {
+    display: flex;
+    width: 100%;
+    justify-content: center;
+    align-items: center;
+    height: 60vh;
+    color: dimgray;
+}
+
+.eventSpecificDiv {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+}
+
+.eventSpecificDiv ul{
+    padding: 0;
+    list-style: none;
+    width: 80%;
+}
+
+.eventSpecificDiv ul li{
+    display: flex;
+    align-items: baseline;
+    justify-content: flex-start;
+}
+
+.eventSpecificDiv ul li div {
+    margin: 0px 20px;
+}
+
+.headingTitle {
+    flex-basis: 30%;
+}
+
+.eventSpecificDiv ul li div p {
+    margin: 0;
+}
+
+.eventButtons button{
+    padding:5px 20px;
+    margin-top: 0px;
+    margin-bottom: 50px;
+    margin-right: 10px;
+}
+
+@media(max-width:700px) {
+
+    .eventSpecificDiv {
+        width: 100%;
+    }
+
+}

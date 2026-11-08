@@ -1,0 +1,54 @@
+.modal {
+    border: none;
+    border-radius: 8px;
+    background-color: #d7fcf8;
+    text-align: center;
+    padding: 0;
+}
+
+.modal form {
+    padding: 2rem; 
+}
+
+.modal img {
+    float: right;
+    width: 20px;
+    margin: 10px;
+    cursor: pointer;
+}
+
+.modal h3 {
+    margin: 20px auto;
+    cursor: default;
+}
+
+.modal button {
+    padding: 8px 20px;
+    margin: 8px 4px;
+    background-color: #2196f3;
+    color: #F0F8FF;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    border-radius: 10px;
+}
+
+.modal[open] {
+    animation: slide-in-from-top 0.35s ease-out;
+}
+
+.modal::backdrop {
+    background: rgba(0, 0, 0, 0.9);
+}
+  
+@keyframes slide-in-from-top {
+    0% {
+        transform: translateY(-15%);
+        opacity: 0;
+    }
+    100% {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+  
