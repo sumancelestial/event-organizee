@@ -15,20 +15,23 @@ AppDataSource.initialize().then(async ()=>{
     listen: {
       port: 4000
     },
-    context: async ({req,res}:any)=>{
-      const verifyToken = await usersRepo.findOne({
+    context: async ({req}:any)=>{
+      const token = req?.headers?.token;
+      const currentUser = token ? await usersRepo.findOne({
         where: {
-          token: req?.headers?.token
+          token: token
         }
-      })
-      if(verifyToken)
+      }) : null;
+      if(currentUser)
       {
         return {
           grantAccess: true,
+          currentUser: currentUser,
         }
       }
       return {
         grantAccess: false,
+        currentUser: null,
       }
     }
   })

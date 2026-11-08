@@ -53,3 +53,36 @@
     }
 
 }
+
+.registrationBox,
+.attendeesBox {
+    width: 80%;
+    box-sizing: border-box;
+    border: 1px solid #8b8b89;
+    border-radius: 5px;
+    padding: 10px 20px;
+    margin-bottom: 20px;
+}
+
+.registrationBox h5,
+.attendeesBox h5 {
+    margin-top: 0;
+}
+
+.registrationBox button {
+    padding: 5px 20px;
+    margin-top: 5px;
+}
+
+.attendeesBox ul {
+    width: 100%;
+}
+
+.registeredMsg {
+    color: #2e7d32;
+    font-weight: 600;
+}
+
+.actionError {
+    color: #c62828;
+}

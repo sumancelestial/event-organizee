@@ -12,6 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Users = void 0;
 const typeorm_1 = require("typeorm");
 const organizations_1 = require("./organizations");
+const registrations_1 = require("./registrations");
 let Users = class Users {
 };
 exports.Users = Users;
@@ -43,6 +44,10 @@ __decorate([
     (0, typeorm_1.ManyToOne)(() => organizations_1.Organizations, (org) => org.users, { onDelete: 'CASCADE' }),
     __metadata("design:type", organizations_1.Organizations)
 ], Users.prototype, "org", void 0);
+__decorate([
+    (0, typeorm_1.OneToMany)(() => registrations_1.Registrations, (registration) => registration.user),
+    __metadata("design:type", Array)
+], Users.prototype, "registrations", void 0);
 exports.Users = Users = __decorate([
     (0, typeorm_1.Entity)()
 ], Users);

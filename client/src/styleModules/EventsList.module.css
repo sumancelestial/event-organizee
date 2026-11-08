@@ -43,6 +43,21 @@
     margin: 0;
 }
 
+.spotsEventTile {
+    color: #2e7d32;
+    font-weight: 600;
+}
+
+.fullEventTile {
+    color: #c62828;
+    font-weight: 600;
+}
+
+.registeredEventTile {
+    color: #1565c0;
+    font-weight: 600;
+}
+
 
 .calTile {
     display: flex;

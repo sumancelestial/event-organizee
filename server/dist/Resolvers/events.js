@@ -8,9 +8,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const graphql_1 = require("graphql");
 const repos_1 = require("../repos");
+const registrations_1 = __importDefault(require("../Services/registrations"));
 const event = {
     organization(parent) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -28,6 +32,34 @@ const event = {
                     code: 'NOT_FOUND'
                 },
             });
+        });
+    },
+    registeredCount(parent) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield registrations_1.default.countByEvent(parent.id);
+        });
+    },
+    spotsLeft(parent) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield registrations_1.default.spotsLeft(parent);
+        });
+    },
+    isFull(parent) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return (yield registrations_1.default.spotsLeft(parent)) === 0;
+        });
+    },
+    isRegistrationClosed(parent) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return registrations_1.default.isClosed(parent);
+        });
+    },
+    isRegistered(parent, _, context) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!(context === null || context === void 0 ? void 0 : context.currentUser)) {
+                return false;
+            }
+            return yield registrations_1.default.isRegistered(parent.id, context.currentUser.id);
         });
     }
 };

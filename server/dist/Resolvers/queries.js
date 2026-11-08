@@ -8,9 +8,14 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const graphql_1 = require("graphql");
 const repos_1 = require("../repos");
+const registrations_1 = __importDefault(require("../Services/registrations"));
+const utils_1 = require("../utils");
 const queries = {
     events(_, args, context) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -28,11 +33,32 @@ const queries = {
                     }
                 }
             });
-            evnts = evnts.map((event) => {
-                event = Object.assign(Object.assign({}, event), { start_utc: new Date(event.start_utc).toISOString(), end_utc: new Date(event.end_utc).toISOString() });
-                return event;
-            });
+            evnts = evnts.map(utils_1.toIsoEvent);
             return evnts;
+        });
+    },
+    myRegistrations(_, __, context) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!(context === null || context === void 0 ? void 0 : context.grantAccess) || !(context === null || context === void 0 ? void 0 : context.currentUser)) {
+                throw new graphql_1.GraphQLError('Unauthorized user.. Please login again!', {
+                    extensions: {
+                        code: 'UNAUTHORIZED',
+                    }
+                });
+            }
+            return yield registrations_1.default.listEventsByUser(context.currentUser.id);
+        });
+    },
+    eventRegistrations(_, args, context) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!(context === null || context === void 0 ? void 0 : context.grantAccess) || !(context === null || context === void 0 ? void 0 : context.currentUser)) {
+                throw new graphql_1.GraphQLError('Unauthorized user.. Please login again!', {
+                    extensions: {
+                        code: 'UNAUTHORIZED',
+                    }
+                });
+            }
+            return yield registrations_1.default.listForOrganizer(args.eventId, context.currentUser.id);
         });
     },
     event(_, args, context) {
@@ -50,8 +76,7 @@ const queries = {
                 }
             });
             if (event) {
-                event = Object.assign(Object.assign({}, event), { start_utc: new Date(event.start_utc).toISOString(), end_utc: new Date(event.end_utc).toISOString() });
-                return event;
+                return (0, utils_1.toIsoEvent)(event);
             }
             return new graphql_1.GraphQLError('Event you are looking for is not found.', {
                 extensions: {

@@ -1,5 +1,6 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { Organizations } from "./organizations";
+import { Registrations } from "./registrations";
 
 @Entity()
 export class Events {
@@ -29,5 +30,8 @@ export class Events {
 
   @ManyToOne(()=>Organizations, (org)=>org.events, {onDelete:'CASCADE'})
   org: Organizations
-  
+
+  @OneToMany(()=>Registrations, (registration)=>registration.event)
+  registrations: Registrations[]
+
 }

@@ -1,5 +1,7 @@
 import { GraphQLError } from "graphql";
 import { eventsRepo, orgRepo, usersRepo } from "../repos";
+import registrationsService from "../Services/registrations";
+import { toIsoEvent } from "../utils";
 
 const queries = {
   async events(_: any, args: any, context:any) {
@@ -18,17 +20,34 @@ const queries = {
         }
       }
     });
-    evnts = evnts.map((event)=>{
-      event = {
-        ...event,
-        start_utc: new Date(event.start_utc).toISOString(),
-        end_utc: new Date(event.end_utc).toISOString(),
-      }
-      return event
-    })
+    evnts = evnts.map(toIsoEvent)
     return evnts
   },
-  
+
+  async myRegistrations(_: any, __: any, context:any) {
+    if(!context?.grantAccess || !context?.currentUser)
+    {
+      throw new GraphQLError('Unauthorized user.. Please login again!', {
+        extensions: {
+          code: 'UNAUTHORIZED',
+        }
+      })
+    }
+    return await registrationsService.listEventsByUser(context.currentUser.id)
+  },
+
+  async eventRegistrations(_: any, args: any, context:any) {
+    if(!context?.grantAccess || !context?.currentUser)
+    {
+      throw new GraphQLError('Unauthorized user.. Please login again!', {
+        extensions: {
+          code: 'UNAUTHORIZED',
+        }
+      })
+    }
+    return await registrationsService.listForOrganizer(args.eventId, context.currentUser.id)
+  },
+
   async event(_:any, args: any, context:any)
   {
     if(!context?.grantAccess)
@@ -45,12 +64,7 @@ const queries = {
       }
     })
     if(event){
-      event = {
-        ...event,
-        start_utc: new Date(event.start_utc).toISOString(),
-        end_utc: new Date(event.end_utc).toISOString(),
-      }
-      return event
+      return toIsoEvent(event)
     }
     return new GraphQLError('Event you are looking for is not found.', {
       extensions: {
@@ -58,7 +72,7 @@ const queries = {
       },
     });
   },
-  
+
   async user(_:any, args: any) {
     return await usersRepo.findOne({
       where: {

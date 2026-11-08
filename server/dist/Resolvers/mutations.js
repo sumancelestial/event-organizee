@@ -8,14 +8,29 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const graphql_1 = require("graphql");
 const events_1 = require("../Entities/events");
 const repos_1 = require("../repos");
+const registrations_1 = __importDefault(require("../Services/registrations"));
+const utils_1 = require("../utils");
+const unauthorized = () => new graphql_1.GraphQLError('Unauthorized user.. Please login again!', {
+    extensions: {
+        code: 'UNAUTHORIZED',
+    }
+});
+const notFound = () => new graphql_1.GraphQLError('Event you are looking for is not found.', {
+    extensions: {
+        code: 'NOT_FOUND'
+    }
+});
 const mutations = {
     addEvent(_, args, context) {
-        var _a, _b, _c, _d, _e, _f, _g, _h;
         return __awaiter(this, void 0, void 0, function* () {
+            var _a, _b, _c, _d, _e, _f, _g, _h;
             if (!(context === null || context === void 0 ? void 0 : context.grantAccess)) {
                 return new graphql_1.GraphQLError('Unauthorized user.. Please login again!', {
                     extensions: {
@@ -82,8 +97,8 @@ const mutations = {
         });
     },
     updateEvent(_, args, context) {
-        var _a, _b;
         return __awaiter(this, void 0, void 0, function* () {
+            var _a, _b;
             if (!(context === null || context === void 0 ? void 0 : context.grantAccess)) {
                 return new graphql_1.GraphQLError('Unauthorized user.. Please login again!', {
                     extensions: {
@@ -113,6 +128,40 @@ const mutations = {
                     code: 'NOT_FOUND'
                 }
             });
+        });
+    },
+    registerForEvent(_, args, context) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!(context === null || context === void 0 ? void 0 : context.grantAccess) || !(context === null || context === void 0 ? void 0 : context.currentUser)) {
+                throw unauthorized();
+            }
+            const event = yield repos_1.eventsRepo.findOne({
+                where: {
+                    id: args.eventId
+                }
+            });
+            if (!event) {
+                throw notFound();
+            }
+            yield registrations_1.default.register(event, context.currentUser);
+            return (0, utils_1.toIsoEvent)(event);
+        });
+    },
+    cancelRegistration(_, args, context) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!(context === null || context === void 0 ? void 0 : context.grantAccess) || !(context === null || context === void 0 ? void 0 : context.currentUser)) {
+                throw unauthorized();
+            }
+            const event = yield repos_1.eventsRepo.findOne({
+                where: {
+                    id: args.eventId
+                }
+            });
+            if (!event) {
+                throw notFound();
+            }
+            yield registrations_1.default.cancel(event.id, context.currentUser.id);
+            return (0, utils_1.toIsoEvent)(event);
         });
     }
 };

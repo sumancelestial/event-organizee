@@ -1,6 +1,20 @@
 import { GraphQLError } from "graphql";
 import { Events } from "../Entities/events"
 import { eventsRepo, orgRepo } from "../repos"
+import registrationsService from "../Services/registrations"
+import { toIsoEvent } from "../utils"
+
+const unauthorized = () => new GraphQLError('Unauthorized user.. Please login again!', {
+  extensions: {
+    code: 'UNAUTHORIZED',
+  }
+})
+
+const notFound = () => new GraphQLError('Event you are looking for is not found.', {
+  extensions: {
+    code: 'NOT_FOUND'
+  }
+})
 
 const mutations = {
   async addEvent(_:any, args: any, context:any){
@@ -106,8 +120,44 @@ const mutations = {
         code: 'NOT_FOUND'
       }
     })
+  },
+
+  async registerForEvent(_:any, args:any, context:any) {
+    if(!context?.grantAccess || !context?.currentUser)
+    {
+      throw unauthorized()
+    }
+    const event = await eventsRepo.findOne({
+      where: {
+        id: args.eventId
+      }
+    })
+    if(!event)
+    {
+      throw notFound()
+    }
+    await registrationsService.register(event, context.currentUser)
+    return toIsoEvent(event)
+  },
+
+  async cancelRegistration(_:any, args:any, context:any) {
+    if(!context?.grantAccess || !context?.currentUser)
+    {
+      throw unauthorized()
+    }
+    const event = await eventsRepo.findOne({
+      where: {
+        id: args.eventId
+      }
+    })
+    if(!event)
+    {
+      throw notFound()
+    }
+    await registrationsService.cancel(event.id, context.currentUser.id)
+    return toIsoEvent(event)
   }
-  
+
 }
 
 export default mutations

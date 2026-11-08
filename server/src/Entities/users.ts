@@ -1,5 +1,6 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { Organizations } from "./organizations";
+import { Registrations } from "./registrations";
 
 @Entity()
 export class Users {
@@ -23,4 +24,7 @@ export class Users {
 
   @ManyToOne(()=>Organizations, (org)=>org.users, {onDelete:'CASCADE'})
   org: Organizations
+
+  @OneToMany(()=>Registrations, (registration)=>registration.user)
+  registrations: Registrations[]
 }

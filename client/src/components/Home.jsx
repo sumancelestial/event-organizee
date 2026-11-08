@@ -6,7 +6,7 @@ import Routing from './Routing';
 const Home = ({ user }) => {
     return (
         <Router>
-            <NavBar />
+            <NavBar user={user} />
             <div className={styles.container}>
                 <Routing user={user} />
             </div>

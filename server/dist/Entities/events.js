@@ -12,6 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Events = void 0;
 const typeorm_1 = require("typeorm");
 const organizations_1 = require("./organizations");
+const registrations_1 = require("./registrations");
 let Events = class Events {
 };
 exports.Events = Events;
@@ -51,6 +52,10 @@ __decorate([
     (0, typeorm_1.ManyToOne)(() => organizations_1.Organizations, (org) => org.events, { onDelete: 'CASCADE' }),
     __metadata("design:type", organizations_1.Organizations)
 ], Events.prototype, "org", void 0);
+__decorate([
+    (0, typeorm_1.OneToMany)(() => registrations_1.Registrations, (registration) => registration.event),
+    __metadata("design:type", Array)
+], Events.prototype, "registrations", void 0);
 exports.Events = Events = __decorate([
     (0, typeorm_1.Entity)()
 ], Events);

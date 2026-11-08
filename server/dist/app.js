@@ -27,20 +27,23 @@ db_1.default.initialize().then(() => __awaiter(void 0, void 0, void 0, function*
         listen: {
             port: 4000
         },
-        context: ({ req, res }) => __awaiter(void 0, void 0, void 0, function* () {
-            var _a;
-            const verifyToken = yield repos_1.usersRepo.findOne({
+        context: (_a) => __awaiter(void 0, [_a], void 0, function* ({ req }) {
+            var _b;
+            const token = (_b = req === null || req === void 0 ? void 0 : req.headers) === null || _b === void 0 ? void 0 : _b.token;
+            const currentUser = token ? yield repos_1.usersRepo.findOne({
                 where: {
-                    token: (_a = req === null || req === void 0 ? void 0 : req.headers) === null || _a === void 0 ? void 0 : _a.token
+                    token: token
                 }
-            });
-            if (verifyToken) {
+            }) : null;
+            if (currentUser) {
                 return {
                     grantAccess: true,
+                    currentUser: currentUser,
                 };
             }
             return {
                 grantAccess: false,
+                currentUser: null,
             };
         })
     });
