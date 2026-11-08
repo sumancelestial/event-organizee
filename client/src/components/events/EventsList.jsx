@@ -39,6 +39,10 @@ const EventsList = ({ user }) => {
                         </div>
                         <p>Start: {moment(event.start_utc).format('DD-MM-YYYY, LT')}</p>
                         <p className={styles.endDateEventTile}>End: {moment(event.end_utc).format('DD-MM-YYYY, LT')}</p>
+                        <p className={event.isFull ? styles.fullTag : styles.spotsTag}>
+                            {event.isFull ? 'Full' : `${event.spotsLeft} spot${event.spotsLeft === 1 ? '' : 's'} left`}
+                        </p>
+                        {event.isRegistered && <p className={styles.registeredTag}>You are registered</p>}
                     </div>
                 ))}
                 <div className={styles.eventTileExtra}></div>

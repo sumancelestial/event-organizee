@@ -43,6 +43,21 @@
     margin: 0;
 }
 
+.spotsTag {
+    color: #2e7d32;
+    font-weight: bold;
+}
+
+.fullTag {
+    color: #c62828;
+    font-weight: bold;
+}
+
+.registeredTag {
+    color: #1565c0;
+    font-weight: bold;
+}
+
 
 .calTile {
     display: flex;

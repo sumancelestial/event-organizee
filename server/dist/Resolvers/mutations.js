@@ -8,20 +8,36 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const graphql_1 = require("graphql");
 const events_1 = require("../Entities/events");
+const registrations_1 = require("../Entities/registrations");
 const repos_1 = require("../repos");
+const utils_1 = __importDefault(require("../utils"));
+const unauthorized = () => new graphql_1.GraphQLError('Unauthorized user.. Please login again!', {
+    extensions: {
+        code: 'UNAUTHORIZED',
+    }
+});
+const notFound = () => new graphql_1.GraphQLError('Event you are looking for is not found.', {
+    extensions: {
+        code: 'NOT_FOUND'
+    }
+});
+const badRequest = (message) => new graphql_1.GraphQLError(message, {
+    extensions: {
+        code: 'BAD_REQUEST'
+    }
+});
 const mutations = {
     addEvent(_, args, context) {
-        var _a, _b, _c, _d, _e, _f, _g, _h;
         return __awaiter(this, void 0, void 0, function* () {
+            var _a, _b, _c, _d, _e, _f, _g, _h;
             if (!(context === null || context === void 0 ? void 0 : context.grantAccess)) {
-                return new graphql_1.GraphQLError('Unauthorized user.. Please login again!', {
-                    extensions: {
-                        code: 'UNAUTHORIZED',
-                    }
-                });
+                return unauthorized();
             }
             const org = yield repos_1.orgRepo.findOne({
                 where: {
@@ -82,7 +98,6 @@ const mutations = {
         });
     },
     updateEvent(_, args, context) {
-        var _a, _b;
         return __awaiter(this, void 0, void 0, function* () {
             if (!(context === null || context === void 0 ? void 0 : context.grantAccess)) {
                 return new graphql_1.GraphQLError('Unauthorized user.. Please login again!', {
@@ -104,15 +119,104 @@ const mutations = {
                         id: args.input.id
                     }
                 });
-                event[0].start_utc = new Date((_a = event[0]) === null || _a === void 0 ? void 0 : _a.start_utc).toISOString();
-                event[0].end_utc = new Date((_b = event[0]) === null || _b === void 0 ? void 0 : _b.end_utc).toISOString();
-                return event[0];
+                return (0, utils_1.default)(event[0]);
             }
             return new graphql_1.GraphQLError('Event you are looking for is not found.', {
                 extensions: {
                     code: 'NOT_FOUND'
                 }
             });
+        });
+    },
+    // A user can register only once, only before the event has ended
+    // and only while there is a spot left.
+    registerForEvent(_, args, context) {
+        return __awaiter(this, void 0, void 0, function* () {
+            var _a;
+            if (!(context === null || context === void 0 ? void 0 : context.grantAccess) || !(context === null || context === void 0 ? void 0 : context.user)) {
+                throw unauthorized();
+            }
+            const event = yield repos_1.eventsRepo.findOne({
+                where: {
+                    id: args.eventId
+                }
+            });
+            if (!event) {
+                throw notFound();
+            }
+            if (new Date(event.end_utc).getTime() <= Date.now()) {
+                throw badRequest('Registration is closed. This event has already ended.');
+            }
+            const alreadyRegistered = yield repos_1.registrationsRepo.findOne({
+                where: {
+                    event: {
+                        id: event.id
+                    },
+                    user: {
+                        id: context.user.id
+                    }
+                }
+            });
+            if (alreadyRegistered) {
+                throw badRequest('You have already registered for this event.');
+            }
+            const registeredCount = yield repos_1.registrationsRepo.count({
+                where: {
+                    event: {
+                        id: event.id
+                    }
+                }
+            });
+            if (registeredCount >= event.capacity) {
+                throw badRequest('This event is full. No spots left.');
+            }
+            const registration = new registrations_1.Registrations();
+            registration.event = event;
+            registration.user = context.user;
+            try {
+                // The unique constraint on (user, event) makes sure a double
+                // registration cannot slip in, even from parallel requests.
+                yield repos_1.registrationsRepo.save(registration);
+            }
+            catch (err) {
+                if ((err === null || err === void 0 ? void 0 : err.code) === '23505' || ((_a = err === null || err === void 0 ? void 0 : err.driverError) === null || _a === void 0 ? void 0 : _a.code) === '23505') {
+                    throw badRequest('You have already registered for this event.');
+                }
+                throw badRequest('Cannot register for this event at this moment.');
+            }
+            return (0, utils_1.default)(event);
+        });
+    },
+    // Cancelling deletes the registration right away, so the spot is
+    // available again immediately.
+    cancelRegistration(_, args, context) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!(context === null || context === void 0 ? void 0 : context.grantAccess) || !(context === null || context === void 0 ? void 0 : context.user)) {
+                throw unauthorized();
+            }
+            const event = yield repos_1.eventsRepo.findOne({
+                where: {
+                    id: args.eventId
+                }
+            });
+            if (!event) {
+                throw notFound();
+            }
+            const registration = yield repos_1.registrationsRepo.findOne({
+                where: {
+                    event: {
+                        id: event.id
+                    },
+                    user: {
+                        id: context.user.id
+                    }
+                }
+            });
+            if (!registration) {
+                throw badRequest('You are not registered for this event.');
+            }
+            yield repos_1.registrationsRepo.delete(registration.id);
+            return (0, utils_1.default)(event);
         });
     }
 };

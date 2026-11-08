@@ -29,6 +29,19 @@ const typeDefs = `#graphql
     start_utc: String!
     end_utc: String!
     organization: Organization!
+    registeredCount: Int!
+    spotsLeft: Int!
+    isFull: Boolean!
+    isRegistrationClosed: Boolean!
+    isRegistered: Boolean!
+    registrations: [Registration!]!
+  }
+
+  type Registration {
+    id: ID!
+    created: String!
+    user: User!
+    event: Event!
   }
 
   type DeleteMsg {
@@ -40,12 +53,16 @@ const typeDefs = `#graphql
     events(orgId: ID!): [Event!]
     event(id: ID!): Event
     user(token: String!): User
+    myRegistrations: [Event!]!
+    eventRegistrations(eventId: ID!): [Registration!]!
   }
 
   type Mutation {
     addEvent(input: NewEvent!): Event
     deleteEvent(id: ID!): DeleteMsg
     updateEvent(input: UpdateEvent!): Event
+    registerForEvent(eventId: ID!): Event!
+    cancelRegistration(eventId: ID!): Event!
   }
 
   input NewEvent {

@@ -16,19 +16,31 @@ AppDataSource.initialize().then(async ()=>{
       port: 4000
     },
     context: async ({req,res}:any)=>{
+      const requestToken = req?.headers?.token;
+      // An undefined token must not be treated as a condition, otherwise
+      // every anonymous request would be matched against the first user.
+      if(!requestToken)
+      {
+        return {
+          grantAccess: false,
+          user: null,
+        }
+      }
       const verifyToken = await usersRepo.findOne({
         where: {
-          token: req?.headers?.token
+          token: requestToken
         }
       })
       if(verifyToken)
       {
         return {
           grantAccess: true,
+          user: verifyToken,
         }
       }
       return {
         grantAccess: false,
+        user: null,
       }
     }
   })

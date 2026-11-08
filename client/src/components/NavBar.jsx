@@ -5,17 +5,19 @@ import { useEffect, useRef } from 'react';
 const NavBar = () => {
     const events = useRef();
     const create = useRef();
+    const mine = useRef();
     const location = useLocation();
 
     useEffect(() => {
-        if (location.pathname === '/event/create') {
-            create.current.className = styles.active;
-            events.current.className = '';
+        const setActive = (ref, isActive) => {
+            if (ref.current) {
+                ref.current.className = isActive ? styles.active : '';
+            }
         }
-        else {
-            events.current.className = styles.active;
-            create.current.className = '';
-        }
+        const path = location.pathname;
+        setActive(create, path === '/event/create');
+        setActive(mine, path === '/my-events');
+        setActive(events, path !== '/event/create' && path !== '/my-events');
     }, [location])
 
     return (
@@ -30,6 +32,7 @@ const NavBar = () => {
             <div className={styles.buttonsMargin}>
                 <div className={styles.buttons}>
                     <Link to='/events' ref={events} className={styles.active}>All Events</Link>
+                    <Link to='/my-events' ref={mine}>My Events</Link>
                     <Link to='/event/create' ref={create}>Create Event</Link>
                 </div>
             </div>

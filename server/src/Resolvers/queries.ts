@@ -1,5 +1,12 @@
 import { GraphQLError } from "graphql";
-import { eventsRepo, orgRepo, usersRepo } from "../repos";
+import { eventsRepo, orgRepo, registrationsRepo, usersRepo } from "../repos";
+import normalizeEvent from "../utils";
+
+const unauthorized = () => new GraphQLError('Unauthorized user.. Please login again!', {
+  extensions: {
+    code: 'UNAUTHORIZED',
+  }
+})
 
 const queries = {
   async events(_: any, args: any, context:any) {
@@ -65,6 +72,68 @@ const queries = {
         token: args.token
       }
     })
+  },
+
+  // Events the logged in user has registered for.
+  async myRegistrations(_:any, __:any, context:any) {
+    if(!context?.grantAccess || !context?.user)
+    {
+      throw unauthorized()
+    }
+    const registrations = await registrationsRepo.find({
+      where: {
+        user: {
+          id: context.user.id
+        }
+      },
+      relations: {
+        event: true
+      },
+      order: {
+        id: 'DESC'
+      }
+    })
+    return registrations
+      .filter((registration)=>!!registration.event)
+      .map((registration)=>normalizeEvent(registration.event))
+  },
+
+  // Organizers view: everyone who registered for an event.
+  async eventRegistrations(_:any, args: any, context:any) {
+    if(!context?.grantAccess)
+    {
+      throw unauthorized()
+    }
+    const event = await eventsRepo.findOne({
+      where: {
+        id: args.eventId
+      }
+    })
+    if(!event)
+    {
+      throw new GraphQLError('Event you are looking for is not found.', {
+        extensions: {
+          code: 'NOT_FOUND'
+        }
+      })
+    }
+    const registrations = await registrationsRepo.find({
+      where: {
+        event: {
+          id: event.id
+        }
+      },
+      relations: {
+        user: true
+      },
+      order: {
+        id: 'DESC'
+      }
+    })
+    return registrations.map((registration)=>({
+      ...registration,
+      created: new Date(registration.created).toISOString()
+    }))
   }
 };
 

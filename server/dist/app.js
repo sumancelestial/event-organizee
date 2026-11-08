@@ -27,20 +27,31 @@ db_1.default.initialize().then(() => __awaiter(void 0, void 0, void 0, function*
         listen: {
             port: 4000
         },
-        context: ({ req, res }) => __awaiter(void 0, void 0, void 0, function* () {
-            var _a;
+        context: (_a) => __awaiter(void 0, [_a], void 0, function* ({ req, res }) {
+            var _b;
+            const requestToken = (_b = req === null || req === void 0 ? void 0 : req.headers) === null || _b === void 0 ? void 0 : _b.token;
+            // An undefined token must not be treated as a condition, otherwise
+            // every anonymous request would be matched against the first user.
+            if (!requestToken) {
+                return {
+                    grantAccess: false,
+                    user: null,
+                };
+            }
             const verifyToken = yield repos_1.usersRepo.findOne({
                 where: {
-                    token: (_a = req === null || req === void 0 ? void 0 : req.headers) === null || _a === void 0 ? void 0 : _a.token
+                    token: requestToken
                 }
             });
             if (verifyToken) {
                 return {
                     grantAccess: true,
+                    user: verifyToken,
                 };
             }
             return {
                 grantAccess: false,
+                user: null,
             };
         })
     });

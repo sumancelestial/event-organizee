@@ -1,16 +1,32 @@
 import { GraphQLError } from "graphql";
 import { Events } from "../Entities/events"
-import { eventsRepo, orgRepo } from "../repos"
+import { Registrations } from "../Entities/registrations"
+import { eventsRepo, orgRepo, registrationsRepo } from "../repos"
+import normalizeEvent from "../utils"
+
+const unauthorized = () => new GraphQLError('Unauthorized user.. Please login again!', {
+  extensions: {
+    code: 'UNAUTHORIZED',
+  }
+})
+
+const notFound = () => new GraphQLError('Event you are looking for is not found.', {
+  extensions: {
+    code: 'NOT_FOUND'
+  }
+})
+
+const badRequest = (message: string) => new GraphQLError(message, {
+  extensions: {
+    code: 'BAD_REQUEST'
+  }
+})
 
 const mutations = {
   async addEvent(_:any, args: any, context:any){
     if(!context?.grantAccess)
     {
-      return new GraphQLError('Unauthorized user.. Please login again!', {
-        extensions: {
-          code: 'UNAUTHORIZED',
-        }
-      })
+      return unauthorized()
     }
     const org = await orgRepo.findOne({
       where: {
@@ -97,15 +113,112 @@ const mutations = {
           id: args.input.id
         }
       })
-      event[0].start_utc = new Date(event[0]?.start_utc).toISOString()
-      event[0].end_utc = new Date(event[0]?.end_utc).toISOString()
-      return event[0]
+      return normalizeEvent(event[0])
     }
     return new GraphQLError('Event you are looking for is not found.', {
       extensions: {
         code: 'NOT_FOUND'
       }
     })
+  },
+
+  // A user can register only once, only before the event has ended
+  // and only while there is a spot left.
+  async registerForEvent(_:any, args:any, context:any){
+    if(!context?.grantAccess || !context?.user)
+    {
+      throw unauthorized()
+    }
+    const event = await eventsRepo.findOne({
+      where: {
+        id: args.eventId
+      }
+    })
+    if(!event)
+    {
+      throw notFound()
+    }
+    if(new Date(event.end_utc).getTime() <= Date.now())
+    {
+      throw badRequest('Registration is closed. This event has already ended.')
+    }
+    const alreadyRegistered = await registrationsRepo.findOne({
+      where: {
+        event: {
+          id: event.id
+        },
+        user: {
+          id: context.user.id
+        }
+      }
+    })
+    if(alreadyRegistered)
+    {
+      throw badRequest('You have already registered for this event.')
+    }
+    const registeredCount = await registrationsRepo.count({
+      where: {
+        event: {
+          id: event.id
+        }
+      }
+    })
+    if(registeredCount >= event.capacity)
+    {
+      throw badRequest('This event is full. No spots left.')
+    }
+    const registration = new Registrations();
+    registration.event = event;
+    registration.user = context.user;
+    try
+    {
+      // The unique constraint on (user, event) makes sure a double
+      // registration cannot slip in, even from parallel requests.
+      await registrationsRepo.save(registration);
+    }
+    catch(err:any)
+    {
+      if(err?.code === '23505' || err?.driverError?.code === '23505')
+      {
+        throw badRequest('You have already registered for this event.')
+      }
+      throw badRequest('Cannot register for this event at this moment.')
+    }
+    return normalizeEvent(event);
+  },
+
+  // Cancelling deletes the registration right away, so the spot is
+  // available again immediately.
+  async cancelRegistration(_:any, args:any, context:any){
+    if(!context?.grantAccess || !context?.user)
+    {
+      throw unauthorized()
+    }
+    const event = await eventsRepo.findOne({
+      where: {
+        id: args.eventId
+      }
+    })
+    if(!event)
+    {
+      throw notFound()
+    }
+    const registration = await registrationsRepo.findOne({
+      where: {
+        event: {
+          id: event.id
+        },
+        user: {
+          id: context.user.id
+        }
+      }
+    })
+    if(!registration)
+    {
+      throw badRequest('You are not registered for this event.')
+    }
+    await registrationsRepo.delete(registration.id)
+    return normalizeEvent(event);
   }
   
 }

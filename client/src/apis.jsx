@@ -25,6 +25,11 @@ export const GET_EVENTS = gql`
             capacity
             start_utc
             end_utc
+            registeredCount
+            spotsLeft
+            isFull
+            isRegistrationClosed
+            isRegistered
         }
     }
 `;
@@ -40,6 +45,71 @@ export const GET_EVENT_BY_ID = gql`
             capacity
             start_utc
             end_utc
+            registeredCount
+            spotsLeft
+            isFull
+            isRegistrationClosed
+            isRegistered
+        }
+    }
+`;
+
+export const MY_REGISTRATIONS = gql`
+    query MyRegistrations {
+        myRegistrations {
+            id
+            name_text
+            dsc_text
+            capacity
+            start_utc
+            end_utc
+            registeredCount
+            spotsLeft
+            isFull
+            isRegistrationClosed
+            isRegistered
+        }
+    }
+`;
+
+export const EVENT_REGISTRATIONS = gql`
+    query EventRegistrations($eventId: ID!) {
+        eventRegistrations(eventId: $eventId) {
+            id
+            created
+            user {
+                id
+                name
+                first_name
+                last_name
+                email
+            }
+        }
+    }
+`;
+
+export const REGISTER_EVENT = gql`
+    mutation RegisterForEvent($eventId: ID!) {
+        registerForEvent(eventId: $eventId) {
+            id
+            registeredCount
+            spotsLeft
+            isFull
+            isRegistrationClosed
+            isRegistered
+        }
+    }
+`;
+
+export const CANCEL_REGISTRATION = gql`
+    mutation CancelRegistration($eventId: ID!) {
+        cancelRegistration(eventId: $eventId) {
+            id
+            registeredCount
+            spotsLeft
+            isFull
+            isRegistrationClosed
+            isRegistered
         }
     }
 `;
